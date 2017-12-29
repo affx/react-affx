@@ -1,11 +1,6 @@
 import { Action, buildDispatcher, Dispatcher, Update } from "affx";
 import * as React from "react";
 
-export interface SimpleEvent {
-  preventDefault(): void;
-  stopPropagation(): void;
-}
-
 export interface DispatcherOptions {
   preventDefault?: boolean;
   stopPropagation?: boolean;
@@ -23,7 +18,7 @@ const defaultDispatcherOptions: DispatcherOptions = {
 
 export interface ReactDispatcher<Actions extends Action>
   extends Dispatcher<Actions> {
-  always<Event extends SimpleEvent>(
+  always<Event extends React.SyntheticEvent<any>>(
     action: Actions,
     options?: DispatcherOptions,
   ): (event: Event) => void;
@@ -33,7 +28,7 @@ const addReactToolsToDispatcher = <Actions extends Action>(
   dispatcher: Dispatcher<Actions>,
 ): ReactDispatcher<Actions> => {
   return Object.assign(dispatcher, {
-    always<Event extends SimpleEvent>(
+    always<Event extends React.SyntheticEvent<any>>(
       action: Actions,
       options: DispatcherOptions = defaultDispatcherOptions,
     ) {
@@ -57,7 +52,7 @@ export function withAffx<State extends object, Actions extends Action>(
   update: Update<State, Actions>,
 ) {
   // tslint:disable-next-line:only-arrow-functions
-  return function<OwnProps = object>(
+  return function<OwnProps extends object>(
     Component: React.ComponentType<OwnProps & WithAffxProps<State, Actions>>,
   ): React.ComponentClass<OwnProps> {
     return class extends React.Component<OwnProps, State> {
