@@ -1,4 +1,4 @@
-import { Action, buildDispatcher, Dispatcher, Update } from "affx";
+import { Action, createDispatcher, Dispatcher, Update } from "affx";
 import * as React from "react";
 
 export type MapStateToProps<State extends object, StateProps extends object> = (
@@ -90,7 +90,7 @@ export const withAffx: WithAffx = <
     public state: State = initialState;
 
     private dispatch = addReactToolsToDispatcher<Actions>(
-      buildDispatcher(() => this.state, this.setState.bind(this), update),
+      createDispatcher(() => this.state, this.setState.bind(this), update),
     );
 
     public render() {
