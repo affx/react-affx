@@ -57,6 +57,7 @@ export interface WithAffx {
   <State extends object, Actions extends Action>(
     initialState: State,
     update: Update<State, Actions>,
+    mapStateToProps?: null,
   ): <OwnProps extends object>(
     Component: React.ComponentType<OwnProps & WithAffxProps<State, Actions>>,
   ) => React.ComponentClass<OwnProps>;
@@ -64,7 +65,7 @@ export interface WithAffx {
   <State extends object, Actions extends Action, StateProps extends object>(
     initialState: State,
     update: Update<State, Actions>,
-    mapStateToProps: MapStateToProps<State, StateProps> | null,
+    mapStateToProps: MapStateToProps<State, StateProps>,
   ): <OwnProps extends object>(
     Component: React.ComponentType<
       OwnProps & WithAffxProps<StateProps, Actions>
