@@ -1,6 +1,6 @@
 {
   "name": "react-affx",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "React binding for AffX",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
