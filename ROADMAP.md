@@ -23,31 +23,9 @@ The value would be taken from the event.currentTarget object and composed with t
 
 Nonetheless, typing issues would occur with this solution.
 
-### 2. Basically a mapStateToProps function
+Instead, a more conventional `mapDispatchToProps` is considered viable.
 
-For the moment the _whole_ state is given back to the Affxed Component. Because of the nature of the re-rendering process, and the immutability of the State (which is a good thing in itself), it may result in potential performance issues especially if our state is fairly huge.
-
-Also, the state may be sometimes pretty "obfuscated", that is, it may contain informations that have to be computed. It's relaty to the principle of "[normalization](https://redux.js.org/docs/recipes/reducers/NormalizingStateShape.html)".
-
-To avoid these, a third, optionnal, parameter will be allowed in the `withAffx` HOC. It will allow us to flatten and to pick up data in our state.
-
-Some sort of "memoization" is considered too, following the [reselect](https://github.com/reactjs/reselect) pattern.
-
-e.g. :
-
-```typescript
-const affx = withAffx(
-  initialState,
-  update,
-  // Here is the "mapStateToProps"
-  state => ({
-    aValue: state.very.deep.value,
-    anOtherValue: performAHeavyAndComplexComputation(state),
-  }),
-);
-```
-
-### 3. Composing Affxed Components
+### 2. Composing Affxed Components
 
 We'll may need a "main" Affxed Component, tracking the others, and allowing them to dispatch more "general" actions.
 

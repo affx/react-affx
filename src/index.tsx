@@ -1,15 +1,21 @@
 import { Action, buildDispatcher, Dispatcher, Update } from "affx";
 import * as React from "react";
 
+export type MapStateToProps<State extends object, StateProps extends object> = (
+  state: State,
+) => StateProps;
+
 export interface DispatcherOptions {
   preventDefault?: boolean;
   stopPropagation?: boolean;
 }
 
-export interface WithAffxProps<State extends object, Actions extends Action> {
+export type WithAffxProps<
+  State extends object,
+  Actions extends Action
+> = State & {
   dispatch: ReactDispatcher<Actions>;
-  state: State;
-}
+};
 
 const defaultDispatcherOptions: DispatcherOptions = {
   preventDefault: false,
@@ -47,30 +53,53 @@ const addReactToolsToDispatcher = <Actions extends Action>(
   });
 };
 
-export function withAffx<State extends object, Actions extends Action>(
+export interface WithAffx {
+  <State extends object, Actions extends Action>(
+    initialState: State,
+    update: Update<State, Actions>,
+    mapStateToProps?: null,
+  ): <OwnProps extends object>(
+    Component: React.ComponentType<OwnProps & WithAffxProps<State, Actions>>,
+  ) => React.ComponentClass<OwnProps>;
+
+  <State extends object, Actions extends Action, StateProps extends object>(
+    initialState: State,
+    update: Update<State, Actions>,
+    mapStateToProps: MapStateToProps<State, StateProps>,
+  ): <OwnProps extends object>(
+    Component: React.ComponentType<
+      OwnProps & WithAffxProps<StateProps, Actions>
+    >,
+  ) => React.ComponentClass<OwnProps>;
+}
+
+export const withAffx: WithAffx = <
+  State extends object,
+  Actions extends Action,
+  StateProps extends object
+>(
   initialState: State,
   update: Update<State, Actions>,
-) {
-  // tslint:disable-next-line:only-arrow-functions
-  return function<OwnProps extends object>(
-    Component: React.ComponentType<OwnProps & WithAffxProps<State, Actions>>,
-  ): React.ComponentClass<OwnProps> {
-    return class extends React.Component<OwnProps, State> {
-      public state: State = initialState;
+  mapStateToProps?: MapStateToProps<State, StateProps> | null,
+): (<OwnProps extends object>(
+  Component: React.ComponentType<OwnProps & WithAffxProps<StateProps, Actions>>,
+) => React.ComponentClass<OwnProps>) => <OwnProps extends object>(
+  Component: React.ComponentType<OwnProps & WithAffxProps<StateProps, Actions>>,
+): React.ComponentClass<OwnProps> =>
+  class extends React.PureComponent<OwnProps, State> {
+    public state: State = initialState;
 
-      private dispatch = addReactToolsToDispatcher<Actions>(
-        buildDispatcher(() => this.state, this.setState.bind(this), update),
+    private dispatch = addReactToolsToDispatcher<Actions>(
+      buildDispatcher(() => this.state, this.setState.bind(this), update),
+    );
+
+    public render() {
+      const stateProps = mapStateToProps
+        ? mapStateToProps(this.state)
+        : this.state;
+
+      return (
+        <Component {...this.props} {...stateProps} dispatch={this.dispatch} />
       );
-
-      public render() {
-        return (
-          <Component
-            {...this.props}
-            dispatch={this.dispatch}
-            state={this.state}
-          />
-        );
-      }
-    };
+    }
   };
-}
