@@ -16,14 +16,16 @@ type NoOpAction = Action<"NOOP">;
 type EndAction = Action<"END">;
 
 describe("withAffx", () => {
-  it("should add dispatch and state props to a StatelessComponent", () => {
-    const fakeWithAffx = withAffx<BasicState, NoOpAction>(
-      null as any,
+  it("should add dispatch and the spread state as props to a StatelessComponent", () => {
+    const initialState = { fakeKey1: "fakeValue1", fakeKey2: "fakeValue2" };
+
+    const fakeWithAffx = withAffx<typeof initialState, NoOpAction>(
+      initialState,
       null as any,
     );
 
     const PartialComponent: React.StatelessComponent<
-      object & WithAffxProps<BasicState, NoOpAction>
+      object & WithAffxProps<typeof initialState, NoOpAction>
     > = () => <></>;
 
     const Component = fakeWithAffx(PartialComponent);
@@ -32,10 +34,11 @@ describe("withAffx", () => {
 
     expect(component.props()).toHaveProperty("dispatch");
     expect(component.props()).toHaveProperty("dispatch.always");
-    expect(component.props()).toHaveProperty("state");
+    expect(component.props()).toHaveProperty("fakeKey1", "fakeValue1");
+    expect(component.props()).toHaveProperty("fakeKey2", "fakeValue2");
   });
 
-  it("should add a state props containing the given state", () => {
+  it("should add the spread state as props containing the given state", () => {
     const initialState: BasicState = { counter: 42 };
 
     const fakeWithAffx = withAffx<BasicState, NoOpAction>(
@@ -51,7 +54,7 @@ describe("withAffx", () => {
 
     const component = Enzyme.shallow(<Component />);
 
-    expect(component.props()).toHaveProperty("state", initialState);
+    expect(component.props()).toHaveProperty("counter", 42);
   });
 
   it("should add a dispatch.always props which calls preventDefault and stopPropagation on given Event", () => {
