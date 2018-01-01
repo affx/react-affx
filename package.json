@@ -32,7 +32,7 @@
     "typescript": "^2.6.2"
   },
   "dependencies": {
-    "affx": "^0.6.0"
+    "affx": "^0.6.1"
   },
   "jest": {
     "transform": {
