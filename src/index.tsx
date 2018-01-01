@@ -1,4 +1,10 @@
-import { Action, createDispatcher, Dispatcher, Update } from "affx";
+import {
+  Action,
+  ActionCreator,
+  createDispatcher,
+  Dispatcher,
+  Update,
+} from "affx";
 import * as React from "react";
 
 export type MapStateToProps<State extends object, StateProps extends object> = (
@@ -17,11 +23,6 @@ export type WithAffxProps<
   dispatch: ReactDispatcher<Actions>;
 };
 
-const defaultDispatcherOptions: DispatcherOptions = {
-  preventDefault: false,
-  stopPropagation: false,
-};
-
 export interface ReactDispatcher<Actions extends Action>
   extends Dispatcher<Actions> {
   always<Event extends React.SyntheticEvent<any>>(
@@ -29,6 +30,39 @@ export interface ReactDispatcher<Actions extends Action>
     options?: DispatcherOptions,
   ): (event: Event) => void;
 }
+
+export declare type ReactDispatcherMapper = <
+  Actions extends Action,
+  MappedActions extends Action
+>(
+  actionCreator: ActionCreator<MappedActions, Actions>,
+  dispatcher: ReactDispatcher<Actions>,
+) => ReactDispatcher<MappedActions>;
+
+export interface WithAffx {
+  <State extends object, Actions extends Action>(
+    initialState: State,
+    update: Update<State, Actions>,
+    mapStateToProps?: null,
+  ): <OwnProps extends object>(
+    Component: React.ComponentType<OwnProps & WithAffxProps<State, Actions>>,
+  ) => React.ComponentClass<OwnProps>;
+
+  <State extends object, Actions extends Action, StateProps extends object>(
+    initialState: State,
+    update: Update<State, Actions>,
+    mapStateToProps: MapStateToProps<State, StateProps>,
+  ): <OwnProps extends object>(
+    Component: React.ComponentType<
+      OwnProps & WithAffxProps<StateProps, Actions>
+    >,
+  ) => React.ComponentClass<OwnProps>;
+}
+
+const defaultDispatcherOptions: DispatcherOptions = {
+  preventDefault: false,
+  stopPropagation: false,
+};
 
 const addReactToolsToDispatcher = <Actions extends Action>(
   dispatcher: Dispatcher<Actions>,
@@ -53,25 +87,15 @@ const addReactToolsToDispatcher = <Actions extends Action>(
   });
 };
 
-export interface WithAffx {
-  <State extends object, Actions extends Action>(
-    initialState: State,
-    update: Update<State, Actions>,
-    mapStateToProps?: null,
-  ): <OwnProps extends object>(
-    Component: React.ComponentType<OwnProps & WithAffxProps<State, Actions>>,
-  ) => React.ComponentClass<OwnProps>;
-
-  <State extends object, Actions extends Action, StateProps extends object>(
-    initialState: State,
-    update: Update<State, Actions>,
-    mapStateToProps: MapStateToProps<State, StateProps>,
-  ): <OwnProps extends object>(
-    Component: React.ComponentType<
-      OwnProps & WithAffxProps<StateProps, Actions>
-    >,
-  ) => React.ComponentClass<OwnProps>;
-}
+export const mapReactDispatcher: ReactDispatcherMapper = (
+  actionCreator,
+  dispatcher,
+) =>
+  addReactToolsToDispatcher(async action => {
+    if (action) {
+      await dispatcher(actionCreator(action));
+    }
+  });
 
 export const withAffx: WithAffx = <
   State extends object,
